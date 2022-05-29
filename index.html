@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Old Money - TITs</title>
+    <link rel="stylesheet" href="tailwind.css">
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body class="h-full min-h-screen bg-dark overflow-y-hide" x-data="alpineInstance()" x-init="init()">
+    <div class="h-full text-gray-200 p-4 lg:p-8">
+
+        <h1 class="mt-0 mb-3 font-light text-3xl" x-text="title"></h1>
+        <p class="text-xl text-gray-200 font-light mb-4" x-html="intro"></p>
+
+        <div class="flex items-center">
+            <input type="text" name="walletSearch" x-model="walletSearch" class="flex w-2/3 bg-dark focus:outline-none focus:shadow-outline border border-green-600 text-gray-200 rounded-lg py-2 px-4 appearance-none leading-normal">
+            <button type="submit" @click="fetchTITs()" class="flex bg-green-600 text-dark font-semibold py-2 px-4 rounded hover:bg-green-700 ml-2" :class="[ isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-700' ]" :disabled="isLoading">
+                Search
+            </button>
+            <template x-if="isError">
+                <div class="pl-4 text-xs font-thin text-red-600" x-text="error"></div>
+            </template>
+        </div>
+
+        <!-- <div class="flex">
+            Decillion:  <div x-text="d_c" class="font-bold text-center mr-2 ml-1"></div>
+            Octillion:  <div x-text="o_c" class="font-bold text-center mr-2 ml-1"></div>
+            Quadrillion:  <div x-text="q_c" class="font-bold text-center mr-2 ml-1"></div>
+            Billion:  <div x-text="b_c" class="font-bold text-center mr-2 ml-1"></div>
+        </div> -->
+
+        <!-- all vols -->
+        <div class="ml-2 pt-6 font-semibold text-sm">Volumes:</div>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-1">
+            <template x-for="tit in vols" :key="tit.name">
+                <div class="bg-dark-lighter rounded-md m-2">
+                    <div x-text="tit.count" class="text-lg font-bold text-center my-1"></div>
+                    <img x-bind:src="tit.img" class="max-w-full h-auto rounded-md" />
+                    <div x-text="tit.name" class="text-lg font-semibold text-center my-1"></div>
+                </div>
+            </template>
+        </div>
+
+        <!-- vol 3 variations -->
+        <div class="ml-2 pt-6 font-semibold text-sm">LXIII variations:</div>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-1">
+            <template x-for="tit in vol_3_variations" :key="tit.name">
+                <div class="bg-dark-lighter rounded-md m-2">
+                    <div x-text="tit.count" class="text-lg font-bold text-center my-1"></div>
+                    <img x-bind:src="tit.img" class="max-w-full h-auto rounded-md" />
+                    <div x-text="tit.name" class="text-lg font-semibold text-center my-1"></div>
+                </div>
+            </template>
+        </div>
+
+        <!-- vol 6 variations -->
+        <div class="ml-2 pt-6 font-semibold text-sm">LXVI variations:</div>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-1">
+            <template x-for="tit in vol_6_variations" :key="tit.name">
+                <div class="bg-dark-lighter rounded-md m-2">
+                    <div x-text="tit.count" class="text-lg font-bold text-center my-1"></div>
+                    <img x-bind:src="tit.img" class="max-w-full h-auto rounded-md" />
+                    <div x-text="tit.name" class="text-lg font-semibold text-center my-1"></div>
+                </div>
+            </template>
+        </div>
+
+        <!-- vol 7 variations -->
+        <div class="ml-2 pt-6 font-semibold text-sm">LXVII variations:</div>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-1">
+            <template x-for="tit in vol_7_variations" :key="tit.name">
+                <div class="bg-dark-lighter rounded-md m-2">
+                    <div x-text="tit.count" class="text-lg font-bold text-center my-1"></div>
+                    <img x-bind:src="tit.img" class="max-w-full h-auto rounded-md" />
+                    <div x-text="tit.name" class="text-lg font-semibold text-center my-1"></div>
+                </div>
+            </template>
+        </div>
+
+        <div class="pt-10 text-lg font-extrabold">
+            If TITs will be burned
+        </div>
+        <div class="flex">
+            Decillion:  <div x-text="d_c" class="font-bold text-center mr-2 ml-1"></div>
+            Octillion:  <div x-text="o_c" class="font-bold text-center mr-2 ml-1"></div>
+            Quadrillion:  <div x-text="q_c" class="font-bold text-center mr-2 ml-1"></div>
+            Billion:  <div x-text="b_c" class="font-bold text-center mr-2 ml-1"></div>
+        </div>
+        <div class="pt-6">
+            Remaining:
+            <template x-for="tit in vols_empty" :key="tit.name">
+                <template x-if="tit.name !== 'LXIII' && tit.name !== 'LXVI' && tit.name !== 'LXVII'">
+                    <div class="flex my-1">
+                        <div x-text="tit.name"></div>
+                        <span class="mr-1">:</span>
+                        <div x-text="tit.remaining" class="font-semibold"></div>
+                    </div>
+                </template>
+            </template>
+            <div class="flex">
+                <template x-for="tit in vol_3_variations_empty" :key="tit.name">
+                    <div class="flex my-1">
+                        <div x-text="tit.name"></div>
+                        <span class="mr-1">:</span>
+                        <div x-text="tit.remaining" class="font-semibold mr-4"></div>
+                    </div>
+                </template>
+            </div>
+            <div class="flex">
+                <template x-for="tit in vol_6_variations_empty" :key="tit.name">
+                    <div class="flex my-1">
+                        <div x-text="tit.name"></div>
+                        <span class="mr-1">:</span>
+                        <div x-text="tit.remaining" class="font-semibold mr-4"></div>
+                    </div>
+                </template>
+            </div>
+            <div class="flex">
+                <template x-for="tit in vol_7_variations_empty" :key="tit.name">
+                    <div class="flex my-1">
+                        <div x-text="tit.name"></div>
+                        <span class="mr-1">:</span>
+                        <div x-text="tit.remaining" class="font-semibold mr-4"></div>
+                    </div>
+                </template>
+            </div>
+        </div>
+  
+    </div>
+
+    <div class="flex flex-col text-center text-xs text-gray-500" x-ref="Bill999">
+        <div>Tombo#8428 / <a href="https://www.oldmoney.io/xesserson-house?user=s041byfpJqa9QQwNnt5YAzsq8sxO7ciQ" target="_blank" class="hover:text-green-600">Mfer. Tombo</a></div>
+    </div>
+</body>
+
+</html>
+
+<script>
+    function alpineInstance() {
+        return {
+            title: 'Old Money - TITs',
+            intro: 'Type the <code class="text-md text-green-600">address/$handle</code> of your Cardano wallet:',
+            walletSearch: localStorage.getItem("address") || '',
+            policyId: 'a4c45615825acae7c4937ee4d45d2ff9a29328084e2dc34bf4af37b2',
+            isLoading: false,
+            isError: false,
+            error: '',
+
+            vols: [],
+            vol_3_variations: [],
+            vol_6_variations: [],
+            vol_7_variations: [],
+
+            vols_coin_count: [[0], [0], [0, 0, 0, 0, 0, 0, 0], [0], [0], [0, 0, 0], [0, 0, 0]],
+            b_c: 0, // billion
+            q_c: 0, // quadrillion
+            o_c: 0, // octillion
+            d_c: 0, // decillion
+
+            calculate_coins() {
+                const allBiggerThanZero = arr => arr.every( v => v > 0 ); // pozri, ci su vseky polozky v poli vacsie ako 0
+                const oneBiggerThanZero = arr => arr.some(v => v > 0); // pozri, ci je aspon jedna polozka v poli vacsia ako 0
+                const allTrue = arr => arr.every( v => v === true ); // pozri, ci su vseky polozky v poli vacsie ako 0
+                const indexOfAll = (arr, val) => arr.reduce((acc, el, i) => (el === val ? [...acc, i] : acc), []);
+                const substract = x => x - 1;
+
+                // check decillion ------------------------------------------------------------------------------------------------
+                is_deci = true;
+                while(is_deci){
+                    res = [];
+                    for(const innerArray of this.vols_coin_count){
+                        res.push(allBiggerThanZero(innerArray));
+                    }
+                    if(allTrue(res)){
+                        this.d_c += 1;
+                        this.vols_coin_count = this.vols_coin_count.map(innerArray => innerArray.map(substract));
+                    } else{
+                        is_deci = false;
+                    }
+                }
+                console.log('Decillion: ' + this.d_c);
+
+
+                // check octillion ------------------------------------------------------------------------------------------------
+                is_octi = true;
+                while(is_octi){
+                    res = [];
+                    for(const e of this.vols_coin_count){
+                        res.push(oneBiggerThanZero(e));
+                    }
+                    if(allTrue(res)){
+                        this.o_c += 1;
+                        // iteruj cez vsetky vnutorne polia
+                        for (let i = 0; i < this.vols_coin_count.length; i++) {
+                            // najdni prvy element (jeho index), ktory je viac ako 0
+                            const index = this.vols_coin_count[i].findIndex(element => {
+                                if (element > 0) {
+                                    return true;
+                                }
+                                return false;
+                            });
+                            // odpocitaj od neho 1
+                            this.vols_coin_count[i][index] -= 1;
+                        } 
+                    } else{
+                        is_octi = false;
+                    }
+                }
+                console.log('Octillion: ' + this.o_c);
+
+
+                // check quadrillion ------------------------------------------------------------------------------------------------
+                is_quad = true;
+                while(is_quad){
+                    res = [];
+                    for(const e of this.vols_coin_count){
+                        res.push(oneBiggerThanZero(e));
+                    }
+                    var trueIndexes = indexOfAll(res, true);
+                    // ak asu aspon 4 true
+                    if(trueIndexes.length >= 4){
+                        this.q_c += 1;
+                        // iteruj cez tie indexy (presne 4), ktore su v trueIndexes -> tie maju v sebe aspon jeden element vacsi ako 0
+                        let firstFourTrueIndexes = trueIndexes.slice(0, 4);
+                        for (let i = 0; i < this.vols_coin_count.length; i++) {
+                            // iba tie polia, ktore maju v sebe aspon jeden element vacsi ako 0
+                            if(firstFourTrueIndexes.includes(i)){
+                                // najdi prvy element (jeho index), ktory je viac ako 0
+                                const index = this.vols_coin_count[i].findIndex(element => {
+                                    if (element > 0) {
+                                        return true;
+                                    }
+                                    return false;
+                                });
+                                // odpocitaj od neho 1
+                                this.vols_coin_count[i][index] -= 1;
+                            }
+                        } 
+                    } else{
+                        is_quad = false;
+                    }
+                }
+                console.log('Quadrillion: ' + this.q_c);
+
+
+                // check billion ------------------------------------------------------------------------------------------------
+                is_billi = true;
+                while(is_billi){
+                    res = [];
+                    for(const e of this.vols_coin_count){
+                        res.push(oneBiggerThanZero(e));
+                    }
+                    var trueIndexes = indexOfAll(res, true);
+                    // ak asu aspon 2 true
+                    if(trueIndexes.length >= 2){
+                        this.b_c += 1;
+                        // iteruj cez tie indexy (presne 2), ktore su v trueIndexes -> tie maju v sebe aspon jeden element vacsi ako 0
+                        let firstTwoTrueIndexes = trueIndexes.slice(0, 4);
+                        for (let i = 0; i < this.vols_coin_count.length; i++) {
+                            // iba tie polia, ktore maju v sebe aspon jeden element vacsi ako 0
+                            if(firstTwoTrueIndexes.includes(i)){
+                                // najdi prvy element (jeho index), ktory je viac ako 0
+                                const index = this.vols_coin_count[i].findIndex(element => {
+                                    if (element > 0) {
+                                        return true;
+                                    }
+                                    return false;
+                                });
+                                // odpocitaj od neho 1
+                                this.vols_coin_count[i][index] -= 1;
+                            }
+                        } 
+                    } else{
+                        is_billi = false;
+                    }
+                    
+                }
+                console.log('Billion: ' + this.b_c);
+
+                console.log('Remaining:');
+                console.log(this.vols_coin_count);
+
+                // upravit! WIP
+                this.vols_empty[0] = {...this.vols_empty[0], remaining: this.vols_coin_count[0][0]}; 
+                this.vols_empty[1] = {...this.vols_empty[1], remaining: this.vols_coin_count[1][0]};
+
+                // vols_empty[2]
+                // vols_empty[5]
+                // vols_empty[6]
+
+                this.vol_3_variations_empty[0] = {...this.vol_3_variations_empty[0], remaining: this.vols_coin_count[2][0]};
+                this.vol_3_variations_empty[1] = {...this.vol_3_variations_empty[1], remaining: this.vols_coin_count[2][1]}; 
+                this.vol_3_variations_empty[2] = {...this.vol_3_variations_empty[2], remaining: this.vols_coin_count[2][2]}; 
+                this.vol_3_variations_empty[3] = {...this.vol_3_variations_empty[3], remaining: this.vols_coin_count[2][3]}; 
+                this.vol_3_variations_empty[4] = {...this.vol_3_variations_empty[4], remaining: this.vols_coin_count[2][4]}; 
+                this.vol_3_variations_empty[5] = {...this.vol_3_variations_empty[5], remaining: this.vols_coin_count[2][5]}; 
+                this.vol_3_variations_empty[6] = {...this.vol_3_variations_empty[6], remaining: this.vols_coin_count[2][6]};  
+
+                this.vols_empty[3] = {...this.vols_empty[3], remaining: this.vols_coin_count[3][0]}; 
+                this.vols_empty[4] = {...this.vols_empty[4], remaining: this.vols_coin_count[4][0]}; 
+
+                this.vol_6_variations_empty[0] = {...this.vol_6_variations_empty[0], remaining: this.vols_coin_count[5][0]};
+                this.vol_6_variations_empty[1] = {...this.vol_6_variations_empty[1], remaining: this.vols_coin_count[5][1]}; 
+                this.vol_6_variations_empty[2] = {...this.vol_6_variations_empty[2], remaining: this.vols_coin_count[5][2]}; 
+
+                this.vol_7_variations_empty[0] = {...this.vol_7_variations_empty[0], remaining: this.vols_coin_count[6][0]};
+                this.vol_7_variations_empty[1] = {...this.vol_7_variations_empty[1], remaining: this.vols_coin_count[6][1]}; 
+                this.vol_7_variations_empty[2] = {...this.vol_7_variations_empty[2], remaining: this.vols_coin_count[6][2]}; 
+
+                console.log(this.vols_empty);
+                console.log(this.vol_3_variations_empty);
+                console.log(this.vol_6_variations_empty);
+                console.log(this.vol_7_variations_empty);
+
+            },
+
+            init(){
+                this.resetCounts()
+            },
+            async fetchTITs() {
+                this.resetCounts();
+                this.isLoading = true;
+                await fetch(`https://pool.pm/wallet/${this.walletSearch}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            this.isLoading = false;
+                            this.error = `Error: ${response.status} - ${response.statusText}`
+                            this.isError = true;
+                        }
+                        return response.json()
+                    })
+                    .then((data) => {
+                        let tokens = data.tokens;
+                        let tits = tokens.filter(unit => { return unit.policy === this.policyId });
+    
+                        tits.forEach(tit => {
+                            let vol = tit.metadata.Volume;
+                            switch(vol){
+                                case 'LXI':
+                                    this.updateCount(vol);
+                                    this.vols_coin_count[0][0] += 1;
+                                    break;
+                                case 'LXII':
+                                    this.updateCount(vol);
+                                    this.vols_coin_count[1][0] += 1;
+                                    break;
+                                case 'LXIII':
+                                    this.updateCount(vol);
+                                    this.updateVol3Count(tit.name);
+                                    break;
+                                case 'LXIV':
+                                    this.updateCount(vol);
+                                    this.vols_coin_count[3][0] += 1;
+                                    break;
+                                case 'LXV':
+                                    this.updateCount(vol);
+                                    this.vols_coin_count[4][0] += 1;
+                                    break;
+                                case 'LXVI':
+                                    this.updateCount(vol);
+                                    this.updateVol6Count(tit.name);
+                                    break;
+                                case 'LXVII':
+                                    this.updateCount(vol);
+                                    this.updateVol7Count(tit.metadata.Variation);
+                                    break;
+                                default:
+                                    console.log('What is this mfer?');
+                            }
+                        });
+
+                        // console.log(this.vols_coin_count);
+                        this.calculate_coins();
+
+                        this.isLoading = false;
+                        this.isError = false;
+                        localStorage.setItem('address', this.walletSearch);
+                    }).catch(function (err) {
+                        console.log(err);
+                    });
+            },
+            updateCount(name){
+                this.vols.find((vol, i) => {
+                    if (vol.name === name) {
+                        this.vols[i] = { name: this.vols[i].name, img: this.vols[i].img, count: this.vols[i].count + 1};
+                        return true;
+                    }
+                });
+            },
+            updateVol3Count(name){
+                let variation = name.match(/LXIII(.*)/);
+                let variation_name = 'LXIII ' + variation[1][0];
+                this.vols_coin_count[2][variation[1][0]] += 1;
+                this.vol_3_variations.find((vol, i) => {
+                    if (vol.name === variation_name) {
+                        this.vol_3_variations[i] = { name: this.vol_3_variations[i].name, img: this.vol_3_variations[i].img, count: this.vol_3_variations[i].count + 1};
+                        return true;
+                    }
+                });
+            },
+            updateVol6Count(name){
+                let variation_name = '';
+                if(name.includes('POOP')){
+                    variation_name = 'LXVI POOP';
+                    this.vols_coin_count[5][2] += 1;
+                } else if(name.includes('Dhore')){
+                    variation_name = 'LXVI DIC';
+                    this.vols_coin_count[5][1] += 1;
+                } else {
+                    variation_name = 'LXVI TIT';
+                    this.vols_coin_count[5][0] += 1;
+                }
+               
+                this.vol_6_variations.find((vol, i) => {
+                    if (vol.name === variation_name) {
+                        this.vol_6_variations[i] = { name: this.vol_6_variations[i].name, img: this.vol_6_variations[i].img, count: this.vol_6_variations[i].count + 1};
+                        return true;
+                    }
+                });
+            },
+            updateVol7Count(variation){
+                let variation_name = '';
+                if(variation.includes('Shadow')){
+                    variation_name = 'LXVII SHADOW';
+                    this.vols_coin_count[6][2] += 1;
+                } else if(variation.includes('Hoodro')){
+                    variation_name = 'LXVII HOODRO';
+                    this.vols_coin_count[6][1] += 1;
+                } else {
+                    variation_name = 'LXVII TRIXSON';
+                    this.vols_coin_count[6][0] += 1;
+                }
+               
+                this.vol_7_variations.find((vol, i) => {
+                    if (vol.name === variation_name) {
+                        this.vol_7_variations[i] = { name: this.vol_7_variations[i].name, img: this.vol_7_variations[i].img, count: this.vol_7_variations[i].count + 1};
+                        return true;
+                    }
+                });
+            },
+            resetCounts(){
+                this.vols = [...this.vols_empty];
+                this.vol_3_variations = [...this.vol_3_variations_empty];
+                this.vol_6_variations = [...this.vol_6_variations_empty];
+                this.vol_7_variations = [...this.vol_7_variations_empty];
+                this.b_c = 0;
+                this.d_c = 0;
+                this.q_c = 0;
+                this.o_c = 0;
+            },
+            vols_empty: [
+                {'name': 'LXI', 'img': 'img/LXI.jpg', 'count': 0, 'remaining': 0},
+                {'name': 'LXII', 'img': 'img/LXII.jpg', 'count': 0, 'remaining': 0}, 
+                {'name': 'LXIII', 'img': 'img/LXIII.jpg', 'count': 0, 'remaining': 0}, 
+                {'name': 'LXIV', 'img': 'img/LXIV.jpg', 'count': 0, 'remaining': 0}, 
+                {'name': 'LXV', 'img': 'img/LXV.jpg', 'count': 0, 'remaining': 0}, 
+                {'name': 'LXVI', 'img': 'img/LXVI.jpg', 'count': 0, 'remaining': 0},
+                {'name': 'LXVII', 'img': 'img/LXVII.jpg', 'count': 0, 'remaining': 0}, 
+            ],
+            vol_3_variations_empty: [
+                {'name': 'LXIII 0', 'img': 'img/LXIII - 0.jpg', 'count': 0, 'remaining': 0},
+                {'name': 'LXIII 1', 'img': 'img/LXIII - 1.jpg', 'count': 0, 'remaining': 0}, 
+                {'name': 'LXIII 2', 'img': 'img/LXIII - 2.jpg', 'count': 0, 'remaining': 0}, 
+                {'name': 'LXIII 3', 'img': 'img/LXIII - 3.jpg', 'count': 0, 'remaining': 0}, 
+                {'name': 'LXIII 4', 'img': 'img/LXIII - 4.jpg', 'count': 0, 'remaining': 0}, 
+                {'name': 'LXIII 5', 'img': 'img/LXIII - 5.jpg', 'count': 0, 'remaining': 0},
+                {'name': 'LXIII 6', 'img': 'img/LXIII - 6.jpg', 'count': 0, 'remaining': 0}, 
+            ],
+            vol_6_variations_empty: [
+                {'name': 'LXVI TIT', 'img': 'img/LXVI.jpg', 'count': 0, 'remaining': 0},
+                {'name': 'LXVI DIC', 'img': 'img/DIC.jpg', 'count': 0, 'remaining': 0}, 
+                {'name': 'LXVI POOP', 'img': 'img/POOP.jpg', 'count': 0, 'remaining': 0}, 
+            ],
+            vol_7_variations_empty: [
+                {'name': 'LXVII TRIXSON', 'img': 'img/TRIXSON.jpg', 'count': 0, 'remaining': 0}, 
+                {'name': 'LXVII HOODRO', 'img': 'img/HOODRO.jpg', 'count': 0, 'remaining': 0}, 
+                {'name': 'LXVII SHADOW', 'img': 'img/LXVII.jpg', 'count': 0, 'remaining': 0},
+            ],
+
+        }
+    }
+</script>
