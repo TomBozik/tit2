@@ -182,6 +182,7 @@
                         is_deci = false;
                     }
                 }
+                // console.log(this.vols_coin_count);
                 console.log('Decillion: ' + this.d_c);
 
 
@@ -211,6 +212,7 @@
                     }
                 }
                 console.log('Octillion: ' + this.o_c);
+                // console.log(this.vols_coin_count);
 
 
                 // check quadrillion ------------------------------------------------------------------------------------------------
@@ -245,6 +247,7 @@
                     }
                 }
                 console.log('Quadrillion: ' + this.q_c);
+                // console.log(this.vols_coin_count);
 
 
                 // check billion ------------------------------------------------------------------------------------------------
@@ -259,7 +262,7 @@
                     if(trueIndexes.length >= 2){
                         this.b_c += 1;
                         // iteruj cez tie indexy (presne 2), ktore su v trueIndexes -> tie maju v sebe aspon jeden element vacsi ako 0
-                        let firstTwoTrueIndexes = trueIndexes.slice(0, 4);
+                        let firstTwoTrueIndexes = trueIndexes.slice(0, 2);
                         for (let i = 0; i < this.vols_coin_count.length; i++) {
                             // iba tie polia, ktore maju v sebe aspon jeden element vacsi ako 0
                             if(firstTwoTrueIndexes.includes(i)){
@@ -280,6 +283,7 @@
                     
                 }
                 console.log('Billion: ' + this.b_c);
+                // console.log(this.vols_coin_count);
 
                 console.log('Remaining:');
                 console.log(this.vols_coin_count);
